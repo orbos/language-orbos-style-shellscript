@@ -1,37 +1,47 @@
 '.source.shell':
   '#!/usr/bin/env':
     'prefix': 'env'
-    'body': '#!/usr/bin/env $1\n'
+    'body': '#!/usr/bin/env $1\n\n'
   '#!/usr/bin/env bash':
     'prefix': 'bash'
-    'body': '#!/usr/bin/env bash\n'
+    'body': '#!/usr/bin/env bash\n\n'
   '#!/bin/sh':
     'prefix': 'sh'
-    'body': '#!/bin/sh\n'
+    'body': '#!/bin/sh\n\n'
   '#!/usr/bin/env zsh':
     'prefix': 'zsh'
-    'body': '#!/usr/bin/env zsh\n'
+    'body': '#!/usr/bin/env zsh\n\n'
   'alias …':
     'prefix': 'alias'
     'body': 'alias ${1:name}="${2:#statement}"'
   'case … esac':
     'prefix': 'case'
-    'body': 'case ${1:word} in\n\t${2:pattern} )\n\t\t$0;;\nesac'
+    'body': 'case ${1:word} in\n\t${2:pattern} )\n\t\t${0:command} ;;\nesac'
   'elif …':
     'prefix': 'elif'
-    'body': 'elif ${2:[[ ${1:condition} ]]}; then\n\t${0:#statements}'
+    'body': 'elif ${2:[[ ${1:condition} ]]}\n\tthen\n\t${0:#statements}'
   'for … done':
     'prefix': 'for'
-    'body': 'for (( i = 0; i < ${1:10}; i++ )); do\n\t${0:#statements}\ndone'
+    'body': 'for (( i = 0; i < ${1:10}; i++ ))\n\tdo\n\t${0:#statements}\ndone'
   'function …':
     'prefix': 'function'
-    'body': 'function ${1:name}(${2:parameter}) {\n\t${3:#statements}\n}'
+    'body': '${1:name}()\n{\n\t${3:#statements}\n}\n${1:name}variables+=("") ## Input used variables in here.\n${1:name}functions+=("${1:name}")'
+  'function …':
+    'prefix': 'function-notclean'
+    'body': '${1:name}()\n{\n\t${3:#statements}\n}'
   'if … fi':
     'prefix': 'if'
-    'body': 'if ${2:[[ ${1:condition} ]]}; then\n\t${0:#statements}\nfi'
+    'body': 'if ${2:[[ ${1:condition} ]]}\n\tthen\n\t${0:#statements}\nfi'
+  'if … fi':
+    'prefix': 'if#'
+    'body': 'if ${2:(( ${1:operand1} ${3:=} ${4:operand2} ))}\n\tthen\n\t${0:#statements}\nfi'
   'until … done':
     'prefix': 'until'
-    'body': 'until ${2:[[ ${1:condition} ]]}; do\n\t${0:#statements}\ndone'
+    'body': 'until ${2:[[ ${1:condition} ]]}\n\tdo\n\t${0:#statements}\ndone'
   'while … done':
     'prefix': 'while'
-    'body': 'while ${2:[[ ${1:condition} ]]}; do\n\t${0:#statements}\ndone'
+    'body': 'while ${2:[[ ${1:condition} ]]}\n\tdo\n\t${0:#statements}\ndone'
+  'if …':
+    'prefix': 'cleanup'
+    'body': 'if [[ $(type -t cleanup_${1:name}) ]]\n\t## Cleans the bash environment if the user reloads a new library version.\nthen\n\tcleanup_${1:name}\nfi\n\n\n\ncleanup_${1:name}() ## Cleanup function.\n{\n\t${1:name}functions+=("cleanup_${1:name}")\n\tfor function in "${${1:name}functions}"\n\tdo\n\t\tunset -f "$function"\n\tdone\n\n\t${1:name}variables+=("function" "_" "var")\n\tfor var in "${${1:name}variables}"\n\tdo\n\t\tunset -v "$var"\n\tdone\n}'
+    
